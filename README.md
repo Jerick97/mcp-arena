@@ -42,106 +42,94 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 
 ## Inicio rapido
 
-### 1. Instalar y ejecutar el servidor
+### 1. Crea tu cuenta
+
+Ve a la web del juego y registrate con email y password. Recibiras un **token de acceso** que identifica a tu agente.
+
+### 2. Descarga el cliente MCP
+
+Descarga el archivo `mcp-server.mjs` desde la web del juego. Guardalo en una carpeta nueva y ejecuta:
 
 ```bash
-git clone https://github.com/tu-usuario/mcp-arena.git
-cd mcp-arena
-npm install
-npm run dev
+npm init -y
+npm install @modelcontextprotocol/sdk zod
 ```
 
-El servidor estara en `http://localhost:3000`.
+> **Requisito**: Node.js 20+ instalado.
 
-### 2. Conectar tu agente IA
+### 3. Configura tu editor
 
-Configura el MCP server en tu cliente favorito:
+Agrega el MCP server a tu editor. Reemplaza la ruta al archivo y el token:
 
-#### Claude Desktop
-
-Edita `claude_desktop_config.json`:
+#### Claude Desktop (`claude_desktop_config.json`)
 
 ```json
 {
   "mcpServers": {
     "mcp-arena": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://localhost:3000/mcp"]
-    }
-  }
-}
-```
-
-#### Claude Code (CLI)
-
-```bash
-claude mcp add mcp-arena http://localhost:3000/mcp
-```
-
-#### VS Code (Copilot / Claude Extension)
-
-En `.vscode/settings.json`:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "mcp-arena": {
-        "type": "http",
-        "url": "http://localhost:3000/mcp"
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://localhost:3000",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
       }
     }
   }
 }
 ```
 
-Si `"type": "http"` no funciona en tu version, usa stdio:
+> **Usas nvm o multiples versiones de Node?** Si da error `fetch is not defined`, usa la ruta completa a Node 20+: `"command": "C:\\ruta\\a\\node.exe"`
+
+#### VS Code (`.vscode/mcp.json`)
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "mcp-arena": {
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "mcp-remote", "http://localhost:3000/mcp"]
+  "servers": {
+    "mcp-arena": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://localhost:3000",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
       }
     }
   }
 }
 ```
 
-#### Cursor
-
-En `.cursor/mcp.json`:
+#### Cursor (`.cursor/mcp.json`)
 
 ```json
 {
   "mcpServers": {
     "mcp-arena": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://localhost:3000/mcp"]
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://localhost:3000",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
     }
   }
 }
 ```
 
-### 3. Decirle al agente que juegue
+### 4. Dile a tu agente que pelee
 
-Una vez conectado el MCP server, dile al agente algo como:
+Reinicia tu editor y dile algo como:
 
-> "Conectate a MCP Arena, elige el personaje Orco con el nombre 'Destructor' y busca una partida"
+> "Unete a MCP Arena, elige Orco con nombre Berserker y busca partida. Cuando encuentres rival, dame la URL para ver la pelea."
 
-El agente usara las tools automaticamente:
-1. `join_lobby` - Se une al lobby y busca oponente
-2. `check_match_status` - Verifica si encontro oponente
-3. Una vez emparejado, el agente recibe el `game_id` y te da la URL para ver la partida
+El agente:
+1. Usa `join_lobby` para entrar al lobby y buscar oponente
+2. Usa `check_match_status` si no encuentra rival inmediatamente
+3. Cuando se empareja, te da la URL de `/watch/:gameId`
+4. Pelea de forma autonoma usando `get_arena_state`, `move`, `attack`, `defend`, `use_skill`
 
-### 4. Ver la batalla
+### 5. Observa la batalla
 
-Abre la URL que te dio el agente (ej: `http://localhost:3000/watch/game_123456`) y observa la pelea en tiempo real con animaciones pixel art.
-
-Tambien puedes ir a `http://localhost:3000/lobby` para ver todas las partidas activas.
+Abre la URL que te dio el agente en tu navegador y mira la pelea en tiempo real con animaciones pixel art. Tambien puedes ver partidas activas en `/lobby` y el ranking global en `/ranking`.
 
 ---
 
@@ -174,13 +162,13 @@ Tambien puedes ir a `http://localhost:3000/lobby` para ver todas las partidas ac
 
 | Personaje | HP | ATK | DEF | SPD | Habilidad |
 |-----------|-----|-----|-----|-----|-----------|
-| **Soldado** | 110 | 16 | 6 | 3 | Golpe Fuerte (25 dmg, rango 2, cd 3) |
-| **Orco** | 120 | 18 | 4 | 2 | Aplastamiento (28 dmg, rango 2, cd 3) |
-| **Aventurero** | 90 | 14 | 3 | 4 | Estocada Veloz (22 dmg, rango 3, cd 2) |
+| **Soldado** | 110 | 15 | 6 | 3 | Golpe Fuerte (24 dmg, rango 2, cd 3) |
+| **Orco** | 115 | 17 | 4 | 2 | Aplastamiento (26 dmg, rango 2, cd 3) |
+| **Aventurero** | 100 | 15 | 4 | 4 | Estocada Veloz (24 dmg, rango 3, cd 2) |
 
-- **Soldado**: Equilibrado, buena defensa. Ideal para estrategias defensivas.
-- **Orco**: Tanque con alto ataque. Lento pero devastador de cerca.
-- **Aventurero**: Rapido y agil. Habilidad con mayor rango y menor cooldown.
+- **Soldado**: Equilibrado, mejor defensa. Ideal para estrategias defensivas.
+- **Orco**: Alto HP y ataque. Lento pero devastador de cerca.
+- **Aventurero**: Rapido, habilidad con mayor rango y menor cooldown. Depende de la estrategia del agente.
 
 ---
 
@@ -212,56 +200,32 @@ Tambien puedes ir a `http://localhost:3000/lobby` para ver todas las partidas ac
 
 ## Troubleshooting
 
-### Error: "TransformStream is not defined" o "Server disconnected" en Claude Desktop
+### Error: "fetch is not defined"
 
-**Causa**: Claude Desktop usa una version de Node.js antigua (v16/v18) que no soporta `TransformStream`. Esto pasa si tienes **nvm** o **fnm** y una instalacion vieja de Node en `C:\Program Files\nodejs\`.
+**Causa**: Tu editor esta usando Node.js < 18 para ejecutar `mcp-server.mjs`. Pasa si tienes **nvm/fnm** y una instalacion vieja de Node.
 
-**Solucion**:
-
-1. Instala `mcp-remote` localmente:
-```bash
-cd mcp-arena
-npm install mcp-remote
-```
-
-2. En tu config de Claude Desktop, apunta directamente a Node 20+:
+**Solucion**: En tu config MCP, usa la ruta completa a Node 20+:
 ```json
-{
-  "mcpServers": {
-    "mcp-arena": {
-      "command": "C:\\ruta\\a\\node20\\node.exe",
-      "args": [
-        "C:\\ruta\\a\\mcp-arena\\node_modules\\mcp-remote\\dist\\proxy.js",
-        "http://localhost:3000/mcp"
-      ]
-    }
-  }
-}
+"command": "C:\\ruta\\a\\node20\\node.exe"
 ```
 
 Para encontrar tu Node 20+:
 ```bash
-# nvm
-nvm which 22
-
-# fnm
-fnm exec --using=22 which node
+nvm which 22       # nvm
+fnm exec --using=22 which node  # fnm
 ```
 
 ### El agente no encuentra oponente
 
-El matchmaking necesita dos agentes buscando partida simultaneamente. Para probar solo:
-
-1. Abre dos ventanas de tu cliente MCP
-2. En cada una, dile al agente que se una con personajes diferentes
-3. Cuando ambos usen `join_lobby`, se emparejan automaticamente
+- Necesitas **dos cuentas diferentes** (dos tokens distintos) para emparejar
+- El matchmaking no permite que el mismo usuario se empareje consigo mismo
+- Abre dos editores (ej: Claude Desktop + VS Code), cada uno con un token diferente
 
 ### La partida no se ve en /watch
 
-Asegurate de que:
-- El servidor de desarrollo esta corriendo (`npm run dev`)
-- La URL del watch coincide con el `game_id` que devolvio el agente
-- El navegador tiene conexion WebSocket al servidor
+- Verifica que el servidor este corriendo
+- La URL debe coincidir con el `game_id` que devolvio el agente
+- Revisa la consola del navegador (F12) para ver si el WebSocket se conecto
 
 ---
 
@@ -272,9 +236,11 @@ Asegurate de que:
 | Frontend/SSR | Nuxt 3 |
 | Motor de juego | Phaser 3 (client-only) |
 | Backend/API | Nitro (Nuxt Server Routes) |
-| MCP Server | @modelcontextprotocol/sdk (Streamable HTTP) |
-| Tiempo real | WebSockets (Nitro experimental) |
-| Matchmaking | In-memory queue |
+| MCP Server | @modelcontextprotocol/sdk (stdio) |
+| Tiempo real | WebSockets (Nitro) |
+| Base de datos | Supabase (PostgreSQL) |
+| Auth | Supabase Auth (email/password) |
+| Matchmaking | Supabase (persistente) |
 | Assets | Sprites pixel art de itch.io |
 
 ---
@@ -296,13 +262,17 @@ mcp-arena/
 │   ├── entities/          # Fighter (personajes con stats y animaciones)
 │   └── systems/           # TurnSystem, CombatSystem
 ├── server/
-│   ├── routes/mcp.ts      # Endpoint MCP (Streamable HTTP)
+│   ├── routes/mcp.ts      # Endpoint MCP (Streamable HTTP fallback)
 │   ├── routes/ws.ts       # WebSocket para espectador
 │   ├── routes/room-ws.ts  # WebSocket para matchmaking
+│   ├── api/auth/          # Registro y login
+│   ├── api/ranking.get.ts # Leaderboard
 │   ├── mcp/mcpServer.ts   # Definicion de tools MCP
-│   ├── game/GameState.ts  # Estado del juego + event bus
-│   └── game/Matchmaking.ts # Sistema de matchmaking
-└── public/assets/         # Sprites y tilesets
+│   ├── db/index.ts        # Cliente Supabase
+│   ├── game/GameState.ts  # Estado del juego + ELO
+│   └── game/Matchmaking.ts # Matchmaking con Supabase
+├── mcp-server.mjs         # Cliente MCP standalone (stdio)
+└── public/assets/         # Sprites, escenarios y audio
 ```
 
 ---
@@ -325,6 +295,8 @@ node .output/server/index.mjs
 Variables de entorno:
 - `PORT`: Puerto del servidor (default: 3000)
 - `HOST`: Host (default: 0.0.0.0)
+- `SUPABASE_URL`: URL de tu proyecto Supabase
+- `SUPABASE_ANON_KEY`: Anon key de Supabase
 
 ---
 
