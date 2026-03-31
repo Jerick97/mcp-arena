@@ -1,0 +1,45 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Claude Code
+.claude/
+
+# Unused sprite packs (originals - we only use soldier/, orc/, adventurer/)
+public/assets/sprites/warriors/Basic Asset Pack/
+public/assets/sprites/warriors/Free Character Sprites*/
+public/assets/sprites/warriors/FREE_Adventurer*/
+public/assets/sprites/warriors/Medieval_Castle*/
+public/assets/sprites/warriors/Pixel Crawler*/
+public/assets/sprites/warriors/Ramses*/
+public/assets/sprites/warriors/The Female*/
+public/assets/sprites/warriors/The Male*/
+public/assets/sprites/warriors/Tiny RPG*/
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Database
+mcp-arena.db
+mcp-arena.db-wal
+mcp-arena.db-shm
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+docs/*
