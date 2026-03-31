@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="4" fill="#0a0a0f"/>
+
+  <!-- Crossed swords -->
+  <!-- Left sword -->
+  <rect x="8" y="4" width="3" height="16" rx="1" fill="#00ff88" transform="rotate(-20 9.5 12)"/>
+  <rect x="5" y="14" width="9" height="2" rx="1" fill="#00ff88" transform="rotate(-20 9.5 15)"/>
+
+  <!-- Right sword -->
+  <rect x="21" y="4" width="3" height="16" rx="1" fill="#ff4444" transform="rotate(20 22.5 12)"/>
+  <rect x="18" y="14" width="9" height="2" rx="1" fill="#ff4444" transform="rotate(20 22.5 15)"/>
+
+  <!-- Shield/arena circle -->
+  <circle cx="16" cy="16" r="6" fill="none" stroke="#4488ff" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Center pixel dot -->
+  <rect x="14" y="14" width="4" height="4" fill="#ffffff"/>
+
+  <!-- Bottom text area hint -->
+  <rect x="4" y="26" width="24" height="3" rx="1" fill="#00ff88" opacity="0.3"/>
+</svg>

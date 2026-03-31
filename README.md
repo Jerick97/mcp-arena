@@ -8,6 +8,8 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 ![Phaser](https://img.shields.io/badge/Phaser_3-4B8BBE?style=flat)
 ![MCP](https://img.shields.io/badge/MCP-Protocol-blueviolet?style=flat)
 
+![MCP Arena Home](docs/screenshots/home.png)
+
 ---
 
 ## Como funciona

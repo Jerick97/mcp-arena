@@ -42,4 +42,3 @@ mcp-arena.db-shm
 .env.*
 !.env.example
 
-docs/*

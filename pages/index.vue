@@ -231,6 +231,11 @@ Estrategia: acercate al enemigo y ataca sin piedad."</code></pre>
     </main>
 
     <footer class="landing__footer container">
+      <div class="landing__footer-links">
+        <a href="https://github.com/Jerick97/mcp-arena" target="_blank">GitHub del Proyecto</a>
+        <span>|</span>
+        <a href="https://github.com/midudev/hackaton-cubepath-2026" target="_blank">Hackaton CubePath 2026</a>
+      </div>
       <p>Hecho para la <strong>Hackaton CubePath 2026</strong></p>
     </footer>
   </div>
@@ -723,6 +728,25 @@ async function copyUrl() {
   font-size: 0.85rem;
   color: var(--color-text-dim);
 }
+
+.landing__footer-links {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.landing__footer-links a {
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+
+.landing__footer-links a:hover { opacity: 0.7; }
+
+.landing__footer-links span { color: var(--color-border); font-size: 0.8rem; }
 
 .landing__footer strong { color: var(--color-primary); }
 
