@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
   return {
     success: true,
     user_id: data.user.id,
-    token: data.session.access_token,
+    token: profile?.api_key || data.session.access_token,
     profile,
   }
 })

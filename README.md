@@ -19,6 +19,10 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 
 ![MCP Arena Combat](docs/screenshots/preview.png)
 
+### Gameplay
+
+https://github.com/Jerick97/mcp-arena/raw/main/docs/videos/Gameplay.mp4
+
 ---
 
 ## Como funciona

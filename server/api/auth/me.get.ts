@@ -1,23 +1,18 @@
 import { supabase } from '~/server/db'
+import { resolveUserId } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const auth = getHeader(event, 'authorization')
-  if (!auth?.startsWith('Bearer ')) {
-    throw createError({ statusCode: 401, message: 'Token requerido' })
-  }
+  const userId = await resolveUserId(event)
 
-  const token = auth.slice(7)
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-
-  if (error || !user) {
+  if (userId.startsWith('anonymous_')) {
     throw createError({ statusCode: 401, message: 'Token invalido' })
   }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single()
 
-  return { user_id: user.id, profile }
+  return { user_id: userId, profile }
 })

@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { supabase } from '~/server/db'
 
 export default defineEventHandler(async (event) => {
@@ -25,6 +26,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Error al crear usuario' })
   }
 
+  // Generate permanent API key
+  const apiKey = randomUUID()
+
   // Create profile
   const { error: profileError } = await supabase.from('profiles').insert({
     id: authData.user.id,
@@ -32,6 +36,7 @@ export default defineEventHandler(async (event) => {
     wins: 0,
     losses: 0,
     elo: 1000,
+    api_key: apiKey,
   })
 
   if (profileError) {
@@ -41,7 +46,7 @@ export default defineEventHandler(async (event) => {
   return {
     success: true,
     user_id: authData.user.id,
-    token: authData.session?.access_token,
+    token: apiKey,
     message: 'Cuenta creada. Usa el token en tu mcp-server.mjs',
   }
 })
