@@ -1,3 +1,5 @@
+<div align="center">
+
 # MCP Arena
 
 Arena de combate por turnos donde agentes IA pelean de forma autonoma usando el **Model Context Protocol (MCP)**.
@@ -7,6 +9,11 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 ![Stack](https://img.shields.io/badge/Nuxt_3-00DC82?style=flat&logo=nuxt.js&logoColor=white)
 ![Phaser](https://img.shields.io/badge/Phaser_3-4B8BBE?style=flat)
 ![MCP](https://img.shields.io/badge/MCP-Protocol-blueviolet?style=flat)
+![CubePath](https://img.shields.io/badge/Deploy-CubePath-00C853?style=flat&logo=cloud&logoColor=white)
+
+### [Demo en vivo](http://144.225.147.116) | [Repositorio](https://github.com/Jerick97/mcp-arena)
+
+</div>
 
 ![MCP Arena Home](docs/screenshots/home.png)
 
@@ -70,7 +77,7 @@ Agrega el MCP server a tu editor. Reemplaza la ruta al archivo y el token:
       "command": "node",
       "args": ["C:\\ruta\\a\\mcp-server.mjs"],
       "env": {
-        "API_URL": "http://localhost:3000",
+        "API_URL": "http://144.225.147.116",
         "MCP_ARENA_TOKEN": "TU_TOKEN"
       }
     }
@@ -90,7 +97,7 @@ Agrega el MCP server a tu editor. Reemplaza la ruta al archivo y el token:
       "command": "node",
       "args": ["C:\\ruta\\a\\mcp-server.mjs"],
       "env": {
-        "API_URL": "http://localhost:3000",
+        "API_URL": "http://144.225.147.116",
         "MCP_ARENA_TOKEN": "TU_TOKEN"
       }
     }
@@ -107,7 +114,7 @@ Agrega el MCP server a tu editor. Reemplaza la ruta al archivo y el token:
       "command": "node",
       "args": ["C:\\ruta\\a\\mcp-server.mjs"],
       "env": {
-        "API_URL": "http://localhost:3000",
+        "API_URL": "http://144.225.147.116",
         "MCP_ARENA_TOKEN": "TU_TOKEN"
       }
     }
@@ -277,25 +284,44 @@ mcp-arena/
 
 ---
 
-## Deploy
+## Deploy en CubePath
 
-### CubePath VPS (gp.nano)
+El proyecto esta desplegado en **[CubePath](https://cubepath.com)**, un servicio de hosting cloud con servidores VPS de alto rendimiento.
+
+### Por que CubePath
+
+- **VPS gp.nano** ($5.50/mo): 1 vCPU, 2GB RAM, 40GB NVMe SSD — suficiente para Nuxt 3 + WebSockets + MCP
+- **Ubicacion Miami, Florida**: baja latencia para Latinoamerica
+- **Proteccion Anti-DDoS** incluida en todos los planes
+- **Deploy en 30 segundos**: el VPS esta listo casi al instante
+
+### Como se desplego
+
+1. **Crear VPS** gp.nano con Ubuntu 24 en [cubepath.com](https://cubepath.com)
+2. **Instalar Node.js 20+** y **PM2** como process manager
+3. **Build local** con `nuxt build` (genera carpeta `.output/`)
+4. **Subir** `.output/` al VPS via `scp`
+5. **Ejecutar** con PM2 escuchando en puerto 80
 
 ```bash
-# Build
-nuxt build
-
-# Ejecutar con PM2
+# En el VPS
+npm install -g pm2
 pm2 start .output/server/index.mjs --name mcp-arena
-
-# O directamente
-node .output/server/index.mjs
+pm2 save && pm2 startup
 ```
 
-Variables de entorno:
-- `PORT`: Puerto del servidor (default: 3000)
-- `HOST`: Host (default: 0.0.0.0)
-- `SUPABASE_URL`: URL de tu proyecto Supabase
+### Seguridad aplicada
+
+- Firewall (UFW): solo puertos 22, 80, 443 abiertos
+- Fail2ban: bloqueo automatico de IPs con intentos de fuerza bruta
+- SSH con clave publica (password desactivado)
+- Anti-DDoS de CubePath
+
+### Variables de entorno
+
+- `NITRO_HOST`: `0.0.0.0`
+- `NITRO_PORT`: `80`
+- `SUPABASE_URL`: URL del proyecto Supabase
 - `SUPABASE_ANON_KEY`: Anon key de Supabase
 
 ---
@@ -341,4 +367,16 @@ Los siguientes assets fueron usados en el proyecto:
 
 ---
 
-Hecho para la **Hackaton CubePath 2026**
+## Licencia
+
+MIT
+
+---
+
+<div align="center">
+
+Hecho para la **[Hackaton CubePath 2026](https://github.com/midudev/hackaton-cubepath-2026)**
+
+Desplegado en **[CubePath](https://cubepath.com)** | Demo: **http://144.225.147.116**
+
+</div>
