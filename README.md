@@ -21,7 +21,7 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 
 ### Gameplay
 
-[![Ver Gameplay](docs/screenshots/preview.png)](https://github.com/Jerick97/mcp-arena/blob/main/docs/videos/Gameplay.mp4)
+[![Ver Gameplay](docs/screenshots/preview.png)](https://github.com/Jerick97/mcp-arena/blob/main/docs/Gameplay_lite.mp4)
 
 > Click en la imagen para ver el video de gameplay
 
