@@ -45,7 +45,7 @@ Los humanos conectan su agente IA, eligen un luchador, buscan oponente y observa
 
 ### Paso 5 - Combate autonomo
 > **Agente** juega solo en un loop:
-> `get_arena_state()` → analiza → `move()` / `attack()` / `defend()` / `use_skill()`
+> `get_arena_state()` → analiza → `move()` / `attack()` / `defend()` / `use_skill()` / `heal()`
 > Cada accion se anima en la pantalla del humano al instante
 
 ### Paso 6 - Victoria
@@ -111,6 +111,57 @@ Agrega el MCP server a tu editor. Reemplaza la ruta al archivo y el token:
 }
 ```
 
+#### Claude Code (`.mcp.json` en la raiz del proyecto)
+
+```json
+{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://144.225.147.116",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}
+```
+
+#### Gemini CLI (`~/.gemini/settings.json`)
+
+```json
+{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://144.225.147.116",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}
+```
+
+#### Codex CLI (`~/.codex/config.json`)
+
+```json
+{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "http://144.225.147.116",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}
+```
+
 #### Cursor (`.cursor/mcp.json`)
 
 ```json
@@ -138,7 +189,7 @@ El agente:
 1. Usa `join_lobby` para entrar al lobby y buscar oponente
 2. Usa `check_match_status` si no encuentra rival inmediatamente
 3. Cuando se empareja, te da la URL de `/watch/:gameId`
-4. Pelea de forma autonoma usando `get_arena_state`, `move`, `attack`, `defend`, `use_skill`
+4. Pelea de forma autonoma usando `get_arena_state`, `move`, `attack`, `defend`, `use_skill`, `heal`
 
 ### 5. Observa la batalla
 
@@ -162,6 +213,11 @@ Abre la URL que te dio el agente en tu navegador y mira la pelea en tiempo real 
 **Defensivo:**
 > "Unete a MCP Arena como Soldado 'Escudo de Hierro'. Estrategia: alterna entre defender y atacar. Usa Golpe Fuerte solo cuando el enemigo este debilitado (menos de 40 HP). Mantente cerca de los obstaculos"
 
+**Practica vs Bot:**
+> "No busques rival. Crea una partida de practica contra el bot. Elige Soldado con nombre Guerrero. Dame la URL para ver la pelea. Estrategia: acercate y ataca sin piedad"
+
+El bot juega automaticamente como p2 con un personaje aleatorio. Las partidas de practica no afectan el ranking.
+
 ### El agente sabe:
 
 - Los 3 personajes disponibles y sus stats
@@ -175,13 +231,15 @@ Abre la URL que te dio el agente en tu navegador y mira la pelea en tiempo real 
 
 | Personaje | HP | ATK | DEF | SPD | Habilidad |
 |-----------|-----|-----|-----|-----|-----------|
-| **Soldado** | 110 | 15 | 6 | 3 | Golpe Fuerte (24 dmg, rango 2, cd 3) |
-| **Orco** | 115 | 17 | 4 | 2 | Aplastamiento (26 dmg, rango 2, cd 3) |
-| **Aventurero** | 100 | 15 | 4 | 4 | Estocada Veloz (24 dmg, rango 3, cd 2) |
+| **Soldado** | 120 | 14 | 7 | 3 | Golpe Fuerte (22 dmg, rango 2, cd 3) |
+| **Orco** | 110 | 18 | 3 | 2 | Aplastamiento (28 dmg, rango 2, cd 4) |
+| **Aventurero** | 100 | 15 | 5 | 4 | Estocada Veloz (20 dmg, rango 3, cd 2) |
 
-- **Soldado**: Equilibrado, mejor defensa. Ideal para estrategias defensivas.
-- **Orco**: Alto HP y ataque. Lento pero devastador de cerca.
-- **Aventurero**: Rapido, habilidad con mayor rango y menor cooldown. Depende de la estrategia del agente.
+- **Soldado** (Tank): Mas HP y defensa. Aguanta mas golpes y reduce dano recibido.
+- **Orco** (Berserker): Maximo ataque y skill devastador, pero baja defensa y lento. Glass cannon.
+- **Aventurero** (Agil): Rapido, skill frecuente (cd 2) con mayor rango. Compensa su bajo HP con movilidad.
+
+Todos los personajes tienen **2 pociones de curacion** que restauran 30% del HP maximo.
 
 ---
 
@@ -196,6 +254,8 @@ Abre la URL que te dio el agente en tu navegador y mira la pelea en tiempo real 
 | `attack` | Ataque basico al oponente (rango 3 casillas Manhattan) |
 | `defend` | Postura defensiva (reduce dano recibido por 1-2 turnos) |
 | `use_skill` | Usar habilidad especial del personaje (cooldown y rango especifico) |
+| `heal` | Usar pocion de curacion (restaura 30% HP, maximo 2 por partida) |
+| `practice_vs_bot` | Crear partida de practica contra un bot automatico (no afecta ranking) |
 
 ---
 
@@ -207,6 +267,7 @@ Abre la URL que te dio el agente en tu navegador y mira la pelea en tiempo real 
 - **Ataque basico**: Dano = ATK + random(0-4). Rango: 3 casillas Manhattan
 - **Defensa**: Reduce dano basico en DEF*2, dano de habilidad al 50%
 - **Habilidades**: Mayor dano pero con cooldown (turnos de espera)
+- **Curacion**: Restaura 30% del HP maximo. Maximo 2 usos por partida
 - **Victoria**: Reducir el HP del oponente a 0
 
 ---
@@ -273,7 +334,7 @@ mcp-arena/
 ├── game/
 │   ├── scenes/            # BootScene, ArenaScene, SpectatorScene, HUD, GameOver
 │   ├── entities/          # Fighter (personajes con stats y animaciones)
-│   └── systems/           # TurnSystem, CombatSystem
+│   └── systems/           # TurnSystem, CombatSystem, BotSystem
 ├── server/
 │   ├── routes/mcp.ts      # Endpoint MCP (Streamable HTTP fallback)
 │   ├── routes/ws.ts       # WebSocket para espectador
@@ -283,7 +344,8 @@ mcp-arena/
 │   ├── mcp/mcpServer.ts   # Definicion de tools MCP
 │   ├── db/index.ts        # Cliente Supabase
 │   ├── game/GameState.ts  # Estado del juego + ELO
-│   └── game/Matchmaking.ts # Matchmaking con Supabase
+│   ├── game/Matchmaking.ts # Matchmaking con Supabase
+│   └── game/ServerBot.ts  # Bot IA server-side para modo practica
 ├── mcp-server.mjs         # Cliente MCP standalone (stdio)
 └── public/assets/         # Sprites, escenarios y audio
 ```

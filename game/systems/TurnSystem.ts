@@ -1,7 +1,7 @@
 import type { Fighter } from '~/game/entities/Fighter'
 
 export interface TurnAction {
-  type: 'move' | 'attack' | 'defend' | 'skill'
+  type: 'move' | 'attack' | 'defend' | 'skill' | 'heal'
   direction?: 'up' | 'down' | 'left' | 'right'
   steps?: number
   targetId?: string

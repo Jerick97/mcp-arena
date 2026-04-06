@@ -13,7 +13,12 @@ function decide(bot: any, opponent: any): GameAction {
   const skill = bot.skills[0]
   const skillReady = skill && skill.currentCooldown === 0
 
-  // Defender si HP bajo y no estamos pegados
+  // Curarse si HP bajo y tiene pociones
+  if (hpRatio <= 0.35 && bot.healsLeft > 0) {
+    return { type: 'heal' }
+  }
+
+  // Defender si HP bajo, sin pociones, y no estamos pegados
   if (hpRatio <= 0.3 && !bot.isDefending && dist > 1) {
     return { type: 'defend', duration: 1 }
   }

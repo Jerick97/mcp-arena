@@ -13,6 +13,7 @@ export interface ServerFighter {
   speed: number
   isDefending: boolean
   defendTurnsLeft: number
+  healsLeft: number
   skills: ServerSkill[]
 }
 
@@ -26,7 +27,7 @@ export interface ServerSkill {
 }
 
 export interface GameAction {
-  type: 'move' | 'attack' | 'defend' | 'skill'
+  type: 'move' | 'attack' | 'defend' | 'skill' | 'heal'
   direction?: 'up' | 'down' | 'left' | 'right'
   steps?: number
   targetId?: string
@@ -58,21 +59,21 @@ export interface ArenaState {
 const CHARACTER_PRESETS: Record<string, Omit<ServerFighter, 'id' | 'name' | 'gridX' | 'gridY'>> = {
   soldier: {
     characterKey: 'soldier',
-    hp: 110, maxHp: 110, attack: 15, defense: 6, speed: 3,
-    isDefending: false, defendTurnsLeft: 0,
-    skills: [{ id: 'power_strike', name: 'Golpe Fuerte', damage: 24, cooldown: 3, currentCooldown: 0, range: 2 }],
+    hp: 120, maxHp: 120, attack: 14, defense: 7, speed: 3,
+    isDefending: false, defendTurnsLeft: 0, healsLeft: 2,
+    skills: [{ id: 'power_strike', name: 'Golpe Fuerte', damage: 22, cooldown: 3, currentCooldown: 0, range: 2 }],
   },
   orc: {
     characterKey: 'orc',
-    hp: 115, maxHp: 115, attack: 17, defense: 4, speed: 2,
-    isDefending: false, defendTurnsLeft: 0,
-    skills: [{ id: 'smash', name: 'Aplastamiento', damage: 26, cooldown: 3, currentCooldown: 0, range: 2 }],
+    hp: 110, maxHp: 110, attack: 18, defense: 3, speed: 2,
+    isDefending: false, defendTurnsLeft: 0, healsLeft: 2,
+    skills: [{ id: 'smash', name: 'Aplastamiento', damage: 28, cooldown: 4, currentCooldown: 0, range: 2 }],
   },
   adventurer: {
     characterKey: 'adventurer',
-    hp: 100, maxHp: 100, attack: 15, defense: 4, speed: 4,
-    isDefending: false, defendTurnsLeft: 0,
-    skills: [{ id: 'dash_strike', name: 'Estocada Veloz', damage: 24, cooldown: 2, currentCooldown: 0, range: 3 }],
+    hp: 100, maxHp: 100, attack: 15, defense: 5, speed: 4,
+    isDefending: false, defendTurnsLeft: 0, healsLeft: 2,
+    skills: [{ id: 'dash_strike', name: 'Estocada Veloz', damage: 20, cooldown: 2, currentCooldown: 0, range: 3 }],
   },
 }
 
@@ -171,6 +172,7 @@ export async function executeGameAction(gameId: string, fighterId: string, actio
     case 'attack': result = doAttack(fighter, opponent); break
     case 'defend': result = doDefend(fighter, action); break
     case 'skill': result = doSkill(fighter, opponent, action); break
+    case 'heal': result = doHeal(fighter); break
     default: result = { success: false, message: 'Accion no valida' }
   }
 
@@ -237,6 +239,14 @@ function doDefend(fighter: any, action: GameAction) {
   fighter.isDefending = true
   fighter.defendTurnsLeft = (action.duration || 1) + 1
   return { success: true, message: 'Se puso en guardia' }
+}
+
+function doHeal(fighter: any) {
+  if (fighter.healsLeft <= 0) return { success: false, message: 'Sin pociones disponibles' }
+  const healAmount = Math.floor(fighter.maxHp * 0.3)
+  fighter.hp = Math.min(fighter.maxHp, fighter.hp + healAmount)
+  fighter.healsLeft--
+  return { success: true, damage: -healAmount, message: `Se curo ${healAmount} HP (${fighter.healsLeft} pociones)` }
 }
 
 function doSkill(fighter: any, opponent: any, action: GameAction) {

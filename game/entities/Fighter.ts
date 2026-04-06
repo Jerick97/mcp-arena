@@ -22,6 +22,7 @@ export interface Fighter {
   speed: number
   isDefending: boolean
   defendTurnsLeft: number
+  healsLeft: number
   skills: Skill[]
   sprite: Phaser.GameObjects.Sprite
   facing: 'left' | 'right'
@@ -75,8 +76,8 @@ export const CHARACTER_DEFS: Record<string, CharacterDef> = {
     scale: 3,
     yOffset: 128,
     stats: {
-      hp: 110, attack: 16, defense: 6, speed: 3,
-      skills: [{ id: 'power_strike', name: 'Golpe Fuerte', damage: 25, cooldown: 3, currentCooldown: 0, range: 2 }],
+      hp: 120, attack: 14, defense: 7, speed: 3,
+      skills: [{ id: 'power_strike', name: 'Golpe Fuerte', damage: 22, cooldown: 3, currentCooldown: 0, range: 2 }],
     },
   },
   orc: {
@@ -92,8 +93,8 @@ export const CHARACTER_DEFS: Record<string, CharacterDef> = {
     scale: 3,
     yOffset: 128,
     stats: {
-      hp: 120, attack: 18, defense: 4, speed: 2,
-      skills: [{ id: 'smash', name: 'Aplastamiento', damage: 28, cooldown: 3, currentCooldown: 0, range: 2 }],
+      hp: 110, attack: 18, defense: 3, speed: 2,
+      skills: [{ id: 'smash', name: 'Aplastamiento', damage: 28, cooldown: 4, currentCooldown: 0, range: 2 }],
     },
   },
   adventurer: {
@@ -109,8 +110,8 @@ export const CHARACTER_DEFS: Record<string, CharacterDef> = {
     scale: 2.2,
     yOffset: 50,
     stats: {
-      hp: 100, attack: 15, defense: 4, speed: 4,
-      skills: [{ id: 'dash_strike', name: 'Estocada Veloz', damage: 24, cooldown: 2, currentCooldown: 0, range: 3 }],
+      hp: 100, attack: 15, defense: 5, speed: 4,
+      skills: [{ id: 'dash_strike', name: 'Estocada Veloz', damage: 20, cooldown: 2, currentCooldown: 0, range: 3 }],
     },
   },
 }
@@ -154,6 +155,7 @@ export function createFighter(scene: Phaser.Scene, config: FighterConfig): Fight
     speed: config.speed,
     isDefending: false,
     defendTurnsLeft: 0,
+    healsLeft: 2,
     skills: config.skills,
     sprite,
     facing,

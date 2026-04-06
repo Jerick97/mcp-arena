@@ -46,7 +46,7 @@ const server = new McpServer(
 
 server.tool(
   'join_lobby',
-  `Unirse al lobby y buscar oponente. Personajes: soldier (HP:110,ATK:15,DEF:6,SPD:3), orc (HP:115,ATK:17,DEF:4,SPD:2), adventurer (HP:100,ATK:15,DEF:4,SPD:4). Si status es "matched" MUESTRA LA URL al usuario. Si es "waiting" usa check_match_status cada 5s.`,
+  `Unirse al lobby y buscar oponente. Personajes: soldier (HP:120,ATK:14,DEF:7,SPD:3 - tanque), orc (HP:110,ATK:18,DEF:3,SPD:2 - berserker), adventurer (HP:100,ATK:15,DEF:5,SPD:4 - agil). Si status es "matched" MUESTRA LA URL al usuario. Si es "waiting" usa check_match_status cada 5s.`,
   { name: z.string(), character: z.enum(['soldier', 'orc', 'adventurer']) },
   async ({ name, character }) => {
     const r = await api('/api/matchmaking/find', 'POST', { name, characterKey: character })
@@ -121,6 +121,16 @@ server.tool(
   { game_id: z.string(), fighter_id: z.enum(['p1', 'p2']), skill_id: z.string() },
   async ({ game_id, fighter_id, skill_id }) => {
     const r = await api(`/api/game/${game_id}/action`, 'POST', { fighterId: fighter_id, action: { type: 'skill', skillId: skill_id } })
+    return { content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] }
+  },
+)
+
+server.tool(
+  'heal',
+  'Usar pocion de curacion. Restaura 30% del HP maximo. Maximo 2 usos por partida.',
+  { game_id: z.string(), fighter_id: z.enum(['p1', 'p2']) },
+  async ({ game_id, fighter_id }) => {
+    const r = await api(`/api/game/${game_id}/action`, 'POST', { fighterId: fighter_id, action: { type: 'heal' } })
     return { content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] }
   },
 )

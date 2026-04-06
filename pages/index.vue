@@ -371,6 +371,7 @@ const tools = [
   { name: 'attack', desc: 'Atacar al oponente (rango 3 casillas)' },
   { name: 'defend', desc: 'Activar postura defensiva' },
   { name: 'use_skill', desc: 'Usar habilidad especial (cooldown y rango)' },
+  { name: 'heal', desc: 'Usar pocion de curacion (30% HP, max 2 usos)' },
   { name: 'practice_vs_bot', desc: 'Crear partida de practica contra un bot automatico' },
 ]
 

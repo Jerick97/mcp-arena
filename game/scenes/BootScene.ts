@@ -64,6 +64,13 @@ export class BootScene extends Phaser.Scene {
     this.load.spritesheet('adv_hurt', `${ADV_BASE}/hurt.png`, { frameWidth: 96, frameHeight: 80 })
     this.load.spritesheet('adv_death', `${ADV_BASE}/death.png`, { frameWidth: 96, frameHeight: 80 })
 
+    // Attack VFX sprite sheets (64x64 frames, 14 cols x 9 rows)
+    const vfxSheets = ['01', '02', '03', '04', '05', '06', '07']
+    const vfxConfig = { frameWidth: 64, frameHeight: 64 }
+    vfxSheets.forEach(name => {
+      this.load.spritesheet(`vfx-${name}`, `/assets/sprites/effects/attacks/${name}.png`, vfxConfig)
+    })
+
     // Generate FX textures
     this.generateFXTextures()
   }
@@ -132,6 +139,27 @@ export class BootScene extends Phaser.Scene {
             }),
             frameRate: config.frameRate,
             repeat: animType === 'death' ? 0 : -1,
+          })
+        }
+      }
+    }
+
+    // Create VFX animations (7 sheets x 9 color rows = 63 animations)
+    const VFX_COLS = 14
+    const vfxNames = ['01', '02', '03', '04', '05', '06', '07']
+    for (const name of vfxNames) {
+      const textureKey = `vfx-${name}`
+      for (let row = 0; row < 9; row++) {
+        const animKey = `vfx-${name}-${row}`
+        if (!this.anims.exists(animKey)) {
+          this.anims.create({
+            key: animKey,
+            frames: this.anims.generateFrameNumbers(textureKey, {
+              start: row * VFX_COLS,
+              end: row * VFX_COLS + VFX_COLS - 1,
+            }),
+            frameRate: 18,
+            repeat: 0,
           })
         }
       }

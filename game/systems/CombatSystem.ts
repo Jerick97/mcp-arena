@@ -39,6 +39,8 @@ export class CombatSystem {
         return this.executeDefend(fighter, action)
       case 'skill':
         return this.executeSkill(fighter, opponent, action)
+      case 'heal':
+        return this.executeHeal(fighter)
       default:
         return { success: false, message: 'Acción no válida' }
     }
@@ -136,6 +138,18 @@ export class CombatSystem {
     skill.currentCooldown = skill.cooldown
 
     return { success: true, damage, message: `Usó ${skill.name} causando ${damage} de daño` }
+  }
+
+  executeHeal(fighter: Fighter): ActionResult {
+    if (fighter.healsLeft <= 0) {
+      return { success: false, message: 'Sin pociones disponibles' }
+    }
+
+    const healAmount = Math.floor(fighter.maxHp * 0.3)
+    fighter.hp = Math.min(fighter.maxHp, fighter.hp + healAmount)
+    fighter.healsLeft--
+
+    return { success: true, damage: -healAmount, message: `${fighter.name} se curo ${healAmount} HP (${fighter.healsLeft} pociones restantes)` }
   }
 
   getDistance(f1: Fighter, f2: Fighter): number {

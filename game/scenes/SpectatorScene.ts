@@ -3,6 +3,19 @@ import { CHARACTER_DEFS } from '~/game/entities/Fighter'
 
 const GAME_W = 960
 const GAME_H = 640
+const VFX_SCALE = 2.5
+
+// Mapeo de acciones a efectos VFX: sheet (01-07), color row (0-8)
+// Sheets: 01=shuriken, 02=burst, 03=rune, 04=fire, 05=particles, 06=swirl, 07=circles
+// Colors: 0=orange, 1=purple, 2=cyan, 3=green, 4=brown, 5=gray, 6=mauve, 7=red, 8=navy
+const ACTION_VFX: Record<string, { sheet: string; color: number; onTarget: boolean }> = {
+  attack:       { sheet: '01', color: 0, onTarget: true },   // shuriken orange
+  defend:       { sheet: '07', color: 2, onTarget: false },  // circles cyan
+  heal:         { sheet: '07', color: 3, onTarget: false },  // circles green (fila 4)
+  power_strike: { sheet: '04', color: 0, onTarget: true },   // fire orange
+  smash:        { sheet: '04', color: 7, onTarget: true },   // fire red
+  dash_strike:  { sheet: '01', color: 2, onTarget: true },   // shuriken cyan
+}
 
 // Ground points for 960x640 canvas - DEFINITIVE coordinates
 const GROUND_POINTS = [
@@ -293,18 +306,15 @@ export class SpectatorScene extends Phaser.Scene {
       const dirX = Math.sign(opponent.sprite.x - fighter.sprite.x)
       await this.tweenPromise(fighter.sprite, { x: origX + dirX * 20, duration: 100, yoyo: true })
 
-      const fx = this.add.image(opponent.sprite.x, opponentFxY, 'fx_attack')
-        .setScale(2).setAlpha(0.8).setDepth(30)
-
       const hurtAnim = `${opponent.state.characterKey}_hurt_anim`
       if (this.anims.exists(hurtAnim)) opponent.sprite.play(hurtAnim)
       opponent.sprite.setTint(0xff0000)
       this.cameras.main.shake(100, 0.005)
 
-      await this.tweenPromise(fx, { scale: 3, alpha: 0, duration: 300 })
-      fx.destroy()
-      opponent.sprite.clearTint()
+      const vfx = ACTION_VFX['attack']
+      await this.spawnVfx(opponent.sprite.x, opponentFxY, vfx.sheet, vfx.color)
 
+      opponent.sprite.clearTint()
       const idleAnim1 = `${fighter.state.characterKey}_idle_anim`
       const idleAnim2 = `${opponent.state.characterKey}_idle_anim`
       if (this.anims.exists(idleAnim1)) fighter.sprite.play(idleAnim1)
@@ -313,10 +323,12 @@ export class SpectatorScene extends Phaser.Scene {
       if (opponentId === 'p2') opponent.sprite.setFlipX(true)
 
     } else if (action.type === 'defend') {
-      const shield = this.add.image(fighter.sprite.x, fighterFxY, 'fx_shield')
-        .setScale(2).setAlpha(0).setDepth(30)
-      await this.tweenPromise(shield, { alpha: 0.8, scale: 2.5, duration: 300, yoyo: true, hold: 200 })
-      shield.destroy()
+      const vfx = ACTION_VFX['defend']
+      await this.spawnVfx(fighter.sprite.x, fighterFxY, vfx.sheet, vfx.color)
+
+    } else if (action.type === 'heal' && result.success) {
+      const vfx = ACTION_VFX['heal']
+      await this.spawnVfx(fighter.sprite.x, fighterFxY, vfx.sheet, vfx.color)
 
     } else if (action.type === 'skill' && result.success && opponent) {
       if (opponent.sprite.x < fighter.sprite.x) fighter.sprite.setFlipX(true)
@@ -325,24 +337,23 @@ export class SpectatorScene extends Phaser.Scene {
       const atkAnim = `${fighter.state.characterKey}_attack_anim`
       if (this.anims.exists(atkAnim)) fighter.sprite.play(atkAnim)
 
+      // Proyectil volando hacia el oponente
       const proj = this.add.image(fighter.sprite.x, fighterFxY, 'projectile')
         .setScale(2).setDepth(30)
-
       await this.tweenPromise(proj, { x: opponent.sprite.x, y: opponentFxY, duration: 400, ease: 'Sine.easeIn' })
       proj.destroy()
 
       const hurtAnim = `${opponent.state.characterKey}_hurt_anim`
       if (this.anims.exists(hurtAnim)) opponent.sprite.play(hurtAnim)
-
-      const fx = this.add.image(opponent.sprite.x, opponentFxY, 'fx_attack')
-        .setScale(2.5).setTint(0xff6600).setDepth(30)
       opponent.sprite.setTint(0xff6600)
       this.cameras.main.shake(150, 0.01)
 
-      await this.tweenPromise(fx, { scale: 3.5, alpha: 0, duration: 400 })
-      fx.destroy()
-      opponent.sprite.clearTint()
+      // VFX basado en el skill usado
+      const skillId = action.skillId || ''
+      const vfx = ACTION_VFX[skillId] || ACTION_VFX['attack']
+      await this.spawnVfx(opponent.sprite.x, opponentFxY, vfx.sheet, vfx.color)
 
+      opponent.sprite.clearTint()
       const idleAnim1 = `${fighter.state.characterKey}_idle_anim`
       const idleAnim2 = `${opponent.state.characterKey}_idle_anim`
       if (this.anims.exists(idleAnim1)) fighter.sprite.play(idleAnim1)
@@ -410,6 +421,24 @@ export class SpectatorScene extends Phaser.Scene {
       stroke: '#000000', strokeThickness: 1,
     }).setDepth(50)
     this.logTexts.push(logText)
+  }
+
+  spawnVfx(x: number, y: number, sheet: string, colorRow: number): Promise<void> {
+    return new Promise((resolve) => {
+      const textureKey = `vfx-${sheet}`
+      const animKey = `vfx-${sheet}-${colorRow}`
+      if (!this.anims.exists(animKey)) { resolve(); return }
+
+      const vfx = this.add.sprite(x, y, textureKey)
+        .setScale(VFX_SCALE)
+        .setDepth(30)
+
+      vfx.play(animKey)
+      vfx.once('animationcomplete', () => {
+        vfx.destroy()
+        resolve()
+      })
+    })
   }
 
   tweenPromise(target: any, config: any): Promise<void> {

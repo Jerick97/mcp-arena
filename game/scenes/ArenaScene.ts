@@ -87,6 +87,7 @@ export class ArenaScene extends Phaser.Scene {
       a: this.input.keyboard!.addKey('A'),
       d: this.input.keyboard!.addKey('D'),
       s: this.input.keyboard!.addKey('S'),
+      h: this.input.keyboard!.addKey('H'),
       space: this.input.keyboard!.addKey('SPACE'),
     }
 
@@ -135,9 +136,10 @@ export class ArenaScene extends Phaser.Scene {
       { key: 'attack', label: 'ATACAR', color: 0xff4444, hotkey: 'A' },
       { key: 'defend', label: 'DEFENDER', color: 0x4488ff, hotkey: 'D' },
       { key: 'skill', label: 'HABILIDAD', color: 0xffaa00, hotkey: 'S' },
+      { key: 'heal', label: 'CURAR', color: 0x44ff44, hotkey: 'H' },
     ]
 
-    const startX = 240
+    const startX = 200
     const y = 610
 
     actions.forEach((action, i) => {
@@ -182,7 +184,7 @@ export class ArenaScene extends Phaser.Scene {
   }
 
   updateActionUI() {
-    const actions = ['move', 'attack', 'defend', 'skill']
+    const actions = ['move', 'attack', 'defend', 'skill', 'heal']
     this.actionButtons.forEach((container, i) => {
       const bg = container.list[0] as Phaser.GameObjects.Rectangle
       if (actions[i] === this.selectedAction) {
@@ -252,6 +254,7 @@ export class ArenaScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.actionKeys.a)) this.selectAction('attack')
     if (Phaser.Input.Keyboard.JustDown(this.actionKeys.d)) this.selectAction('defend')
     if (Phaser.Input.Keyboard.JustDown(this.actionKeys.s)) this.selectAction('skill')
+    if (Phaser.Input.Keyboard.JustDown(this.actionKeys.h)) this.selectAction('heal')
 
     let action: TurnAction | null = null
 
@@ -277,6 +280,12 @@ export class ArenaScene extends Phaser.Scene {
       if (Phaser.Input.Keyboard.JustDown(this.actionKeys.space)) {
         if (current.skills[0] && current.skills[0].currentCooldown === 0) {
           action = { type: 'skill', skillId: current.skills[0].id, targetId: opponent.id }
+        }
+      }
+    } else if (this.selectedAction === 'heal') {
+      if (Phaser.Input.Keyboard.JustDown(this.actionKeys.space)) {
+        if (current.healsLeft > 0) {
+          action = { type: 'heal' }
         }
       }
     }
@@ -308,6 +317,8 @@ export class ArenaScene extends Phaser.Scene {
     } else if (action.type === 'skill' && result.success) {
       setFighterFacing(fighter, opponent.sprite.x)
       await this.animateSkill(fighter, opponent)
+    } else if (action.type === 'heal' && result.success) {
+      await this.spawnVfx(fighter.sprite.x, fighter.sprite.y, '07', 3) // circles green (fila 4)
     }
 
     // Log action
@@ -351,15 +362,31 @@ export class ArenaScene extends Phaser.Scene {
     })
   }
 
+  spawnVfx(x: number, y: number, sheet: string, colorRow: number): Promise<void> {
+    return new Promise((resolve) => {
+      const textureKey = `vfx-${sheet}`
+      const animKey = `vfx-${sheet}-${colorRow}`
+      if (!this.anims.exists(animKey)) { resolve(); return }
+
+      const vfx = this.add.sprite(x, y, textureKey)
+        .setScale(2)
+        .setDepth(30)
+
+      vfx.play(animKey)
+      vfx.once('animationcomplete', () => {
+        vfx.destroy()
+        resolve()
+      })
+    })
+  }
+
   animateAttack(attacker: Fighter, target: Fighter): Promise<void> {
     return new Promise((resolve) => {
       const origX = attacker.sprite.x
       const dirX = Math.sign(target.sprite.x - attacker.sprite.x)
 
-      // Play attack animation
       playFighterAnim(attacker, 'attack')
 
-      // Lunge toward target
       this.tweens.add({
         targets: attacker.sprite,
         x: origX + dirX * 20,
@@ -368,53 +395,25 @@ export class ArenaScene extends Phaser.Scene {
         ease: 'Sine.easeOut',
       })
 
-      // Flash effect on target
-      const fx = this.add.image(target.sprite.x, target.sprite.y, 'fx_attack')
-        .setScale(1.5)
-        .setAlpha(0.8)
-
       this.time.delayedCall(100, () => {
-        // Play hurt animation on target
         playFighterAnim(target, 'hurt')
         target.sprite.setTint(0xff0000)
         this.cameras.main.shake(100, 0.005)
 
-        this.tweens.add({
-          targets: fx,
-          scale: 2,
-          alpha: 0,
-          duration: 300,
-          onComplete: () => {
-            fx.destroy()
-            target.sprite.clearTint()
-            playFighterAnim(attacker, 'idle')
-            playFighterAnim(target, 'idle')
-            resolve()
-          },
+        // VFX sprite attack (shuriken orange)
+        this.spawnVfx(target.sprite.x, target.sprite.y, '01', 0).then(() => {
+          target.sprite.clearTint()
+          playFighterAnim(attacker, 'idle')
+          playFighterAnim(target, 'idle')
+          resolve()
         })
       })
     })
   }
 
   animateDefend(fighter: Fighter): Promise<void> {
-    return new Promise((resolve) => {
-      const shield = this.add.image(fighter.sprite.x, fighter.sprite.y, 'fx_shield')
-        .setScale(1.5)
-        .setAlpha(0)
-
-      this.tweens.add({
-        targets: shield,
-        alpha: 0.8,
-        scale: 2,
-        duration: 300,
-        yoyo: true,
-        hold: 200,
-        onComplete: () => {
-          shield.destroy()
-          resolve()
-        },
-      })
-    })
+    // VFX sprite defend (circles cyan)
+    return this.spawnVfx(fighter.sprite.x, fighter.sprite.y, '07', 2)
   }
 
   animateSkill(attacker: Fighter, target: Fighter): Promise<void> {
@@ -434,25 +433,23 @@ export class ArenaScene extends Phaser.Scene {
           proj.destroy()
 
           playFighterAnim(target, 'hurt')
-          const fx = this.add.image(target.sprite.x, target.sprite.y, 'fx_attack')
-            .setScale(2)
-            .setTint(0xff6600)
-
           target.sprite.setTint(0xff6600)
           this.cameras.main.shake(150, 0.01)
 
-          this.tweens.add({
-            targets: fx,
-            scale: 3,
-            alpha: 0,
-            duration: 400,
-            onComplete: () => {
-              fx.destroy()
-              target.sprite.clearTint()
-              playFighterAnim(attacker, 'idle')
-              playFighterAnim(target, 'idle')
-              resolve()
-            },
+          // VFX basado en el skill del personaje
+          const skillId = attacker.skills[0]?.id || ''
+          const vfxMap: Record<string, { sheet: string; color: number }> = {
+            power_strike: { sheet: '04', color: 0 },  // fire orange
+            smash:        { sheet: '04', color: 7 },   // fire red
+            dash_strike:  { sheet: '01', color: 2 },   // shuriken cyan
+          }
+          const vfx = vfxMap[skillId] || { sheet: '04', color: 0 }
+
+          this.spawnVfx(target.sprite.x, target.sprite.y, vfx.sheet, vfx.color).then(() => {
+            target.sprite.clearTint()
+            playFighterAnim(attacker, 'idle')
+            playFighterAnim(target, 'idle')
+            resolve()
           })
         },
       })
