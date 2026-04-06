@@ -80,6 +80,9 @@ export class SpectatorScene extends Phaser.Scene {
   }
 
   create() {
+    // No pausar audio al perder foco
+    this.game.sound.pauseOnBlur = false
+
     // Background
     this.bg = this.add.image(GAME_W / 2, GAME_H / 2, 'scene1').setDepth(0)
     const tex = this.bg.texture.getSourceImage()
@@ -252,6 +255,10 @@ export class SpectatorScene extends Phaser.Scene {
     const opponent = this.fighters.get(opponentId)
     const charDef = CHARACTER_DEFS[fighter.state.characterKey]
     if (!charDef) return
+    const oppCharDef = opponent ? CHARACTER_DEFS[opponent.state.characterKey] : null
+    // Offset Y para centrar FX en el cuerpo del sprite (origin 0.5, 1 = pies en suelo)
+    const fighterFxY = fighter.sprite.y - charDef.scale * 40
+    const opponentFxY = opponent && oppCharDef ? opponent.sprite.y - oppCharDef.scale * 40 : 0
 
     this.addLogEntry(data.fighterName, action.type, result)
 
@@ -286,7 +293,7 @@ export class SpectatorScene extends Phaser.Scene {
       const dirX = Math.sign(opponent.sprite.x - fighter.sprite.x)
       await this.tweenPromise(fighter.sprite, { x: origX + dirX * 20, duration: 100, yoyo: true })
 
-      const fx = this.add.image(opponent.sprite.x, opponent.sprite.y - 40, 'fx_attack')
+      const fx = this.add.image(opponent.sprite.x, opponentFxY, 'fx_attack')
         .setScale(2).setAlpha(0.8).setDepth(30)
 
       const hurtAnim = `${opponent.state.characterKey}_hurt_anim`
@@ -306,7 +313,7 @@ export class SpectatorScene extends Phaser.Scene {
       if (opponentId === 'p2') opponent.sprite.setFlipX(true)
 
     } else if (action.type === 'defend') {
-      const shield = this.add.image(fighter.sprite.x, fighter.sprite.y - 40, 'fx_shield')
+      const shield = this.add.image(fighter.sprite.x, fighterFxY, 'fx_shield')
         .setScale(2).setAlpha(0).setDepth(30)
       await this.tweenPromise(shield, { alpha: 0.8, scale: 2.5, duration: 300, yoyo: true, hold: 200 })
       shield.destroy()
@@ -318,16 +325,16 @@ export class SpectatorScene extends Phaser.Scene {
       const atkAnim = `${fighter.state.characterKey}_attack_anim`
       if (this.anims.exists(atkAnim)) fighter.sprite.play(atkAnim)
 
-      const proj = this.add.image(fighter.sprite.x, fighter.sprite.y - 40, 'projectile')
+      const proj = this.add.image(fighter.sprite.x, fighterFxY, 'projectile')
         .setScale(2).setDepth(30)
 
-      await this.tweenPromise(proj, { x: opponent.sprite.x, y: opponent.sprite.y - 40, duration: 400, ease: 'Sine.easeIn' })
+      await this.tweenPromise(proj, { x: opponent.sprite.x, y: opponentFxY, duration: 400, ease: 'Sine.easeIn' })
       proj.destroy()
 
       const hurtAnim = `${opponent.state.characterKey}_hurt_anim`
       if (this.anims.exists(hurtAnim)) opponent.sprite.play(hurtAnim)
 
-      const fx = this.add.image(opponent.sprite.x, opponent.sprite.y - 40, 'fx_attack')
+      const fx = this.add.image(opponent.sprite.x, opponentFxY, 'fx_attack')
         .setScale(2.5).setTint(0xff6600).setDepth(30)
       opponent.sprite.setTint(0xff6600)
       this.cameras.main.shake(150, 0.01)

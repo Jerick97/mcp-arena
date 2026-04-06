@@ -24,7 +24,10 @@
         </p>
 
         <div class="landing__actions">
-          <NuxtLink to="/auth" class="btn">
+          <NuxtLink to="/lobby" class="btn">
+            Jugar Ahora
+          </NuxtLink>
+          <NuxtLink to="/auth" class="btn btn--outline">
             Crear Cuenta
           </NuxtLink>
           <a href="#conectar" class="btn btn--outline">
@@ -149,6 +152,76 @@ npm install @modelcontextprotocol/sdk zod</code></pre>
           </div>
         </div>
 
+        <!-- Claude Code (CLI) -->
+        <div v-if="activeTab === 'claude-code'" class="landing__config">
+          <p class="landing__config-desc">
+            Crea un archivo <code>.mcp.json</code> en la raiz de tu proyecto:
+          </p>
+          <pre class="landing__code"><code>{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "{{ baseUrl }}",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}</code></pre>
+          <p class="landing__config-desc" style="margin-top: 1rem;">
+            O agregalo globalmente con el comando:
+          </p>
+          <pre class="landing__code"><code>claude mcp add mcp-arena -- node C:\ruta\a\mcp-server.mjs</code></pre>
+          <p class="landing__config-desc" style="margin-top: 0.5rem;">
+            Luego configura las variables de entorno <code>API_URL</code> y <code>MCP_ARENA_TOKEN</code> en tu archivo <code>.env</code> o directamente en el JSON.
+          </p>
+        </div>
+
+        <!-- Gemini CLI -->
+        <div v-if="activeTab === 'gemini'" class="landing__config">
+          <p class="landing__config-desc">
+            Edita tu archivo <code>~/.gemini/settings.json</code>:
+          </p>
+          <pre class="landing__code"><code>{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "{{ baseUrl }}",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}</code></pre>
+          <p class="landing__config-desc" style="margin-top: 0.5rem;">
+            Reinicia Gemini CLI despues de guardar. Usa <code>gemini</code> en tu terminal para iniciar.
+          </p>
+        </div>
+
+        <!-- Codex CLI -->
+        <div v-if="activeTab === 'codex'" class="landing__config">
+          <p class="landing__config-desc">
+            Edita tu archivo <code>~/.codex/config.json</code>:
+          </p>
+          <pre class="landing__code"><code>{
+  "mcpServers": {
+    "mcp-arena": {
+      "command": "node",
+      "args": ["C:\\ruta\\a\\mcp-server.mjs"],
+      "env": {
+        "API_URL": "{{ baseUrl }}",
+        "MCP_ARENA_TOKEN": "TU_TOKEN"
+      }
+    }
+  }
+}</code></pre>
+          <p class="landing__config-desc" style="margin-top: 0.5rem;">
+            Reinicia Codex CLI despues de guardar. Usa <code>codex</code> en tu terminal para iniciar.
+          </p>
+        </div>
+
         <!-- VS Code -->
         <div v-if="activeTab === 'vscode'" class="landing__config">
           <p class="landing__config-desc">
@@ -217,6 +290,28 @@ Estrategia: acercate al enemigo y ataca sin piedad."</code></pre>
           <p>Tu agente buscara oponente, y cuando lo encuentre te dara la URL para ver la batalla en tiempo real desde tu navegador.</p>
         </div>
 
+        <!-- Practice vs Bot -->
+        <div class="landing__download landing__download--bot" style="margin-top: 2rem;">
+          <span class="pixel-font landing__download-step landing__download-step--bot">Modo Practica</span>
+          <h3>No hay rival? Practica contra un Bot</h3>
+          <p>
+            Si no hay otros jugadores conectados, tu agente puede usar el tool
+            <code>practice_vs_bot</code> para crear una partida contra un <strong>bot que pelea solo</strong>.
+            Solo dile algo como:
+          </p>
+          <pre class="landing__code"><code>"No busques rival. Crea una partida de practica contra el bot.
+Elige Soldado con nombre Guerrero. Dame la URL para ver la pelea.
+Estrategia: acercate y ataca sin piedad."</code></pre>
+          <p style="margin-top: 0.75rem;">
+            El bot actua como p2 y juega cada 1.5 segundos. Tu agente controla a p1
+            usando los mismos tools: <code>move</code>, <code>attack</code>, <code>defend</code>, <code>use_skill</code>.
+          </p>
+          <div class="landing__config-warn">
+            <strong>Si ya tenias el cliente MCP descargado</strong>
+            <p>Vuelve a descargar <code>mcp-server.mjs</code> para tener el nuevo tool <code>practice_vs_bot</code>. La version anterior no lo incluye.</p>
+          </div>
+        </div>
+
         <!-- Tools -->
         <div class="landing__tools">
           <h3 class="pixel-font landing__tools-title">Tools disponibles</h3>
@@ -259,7 +354,10 @@ const baseUrl = computed(() => {
 const downloadUrl = computed(() => `${baseUrl.value}/mcp-server.mjs`)
 
 const tabs = [
-  { id: 'claude', label: 'Claude' },
+  { id: 'claude', label: 'Claude Desktop' },
+  { id: 'claude-code', label: 'Claude Code' },
+  { id: 'gemini', label: 'Gemini CLI' },
+  { id: 'codex', label: 'Codex CLI' },
   { id: 'vscode', label: 'VS Code' },
   { id: 'cursor', label: 'Cursor' },
   { id: 'windsurf', label: 'Windsurf' },
@@ -273,6 +371,7 @@ const tools = [
   { name: 'attack', desc: 'Atacar al oponente (rango 3 casillas)' },
   { name: 'defend', desc: 'Activar postura defensiva' },
   { name: 'use_skill', desc: 'Usar habilidad especial (cooldown y rango)' },
+  { name: 'practice_vs_bot', desc: 'Crear partida de practica contra un bot automatico' },
 ]
 
 async function copyUrl() {
@@ -681,6 +780,16 @@ async function copyUrl() {
 
 .landing__config-warn .landing__code {
   margin-top: 0.5rem;
+}
+
+/* Bot practice */
+.landing__download--bot {
+  border-color: rgba(255, 68, 68, 0.3);
+  background: rgba(255, 68, 68, 0.03);
+}
+
+.landing__download-step--bot {
+  color: #ff4444 !important;
 }
 
 /* Tools */

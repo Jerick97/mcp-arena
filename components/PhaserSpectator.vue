@@ -29,6 +29,9 @@ onMounted(() => {
     height: 640,
     pixelArt: true,
     backgroundColor: '#1a1a2e',
+    audio: {
+      disableWebAudio: false,
+    },
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -132,5 +135,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.phaser-spectator :deep(canvas) {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 </style>

@@ -2,6 +2,10 @@
   <div class="lobby">
     <header class="lobby__header container">
       <NuxtLink to="/" class="pixel-font lobby__logo">MCP Arena</NuxtLink>
+      <nav class="lobby__nav">
+        <NuxtLink to="/lobby" class="lobby__nav-link lobby__nav-link--active">Partidas</NuxtLink>
+        <NuxtLink to="/ranking" class="lobby__nav-link">Ranking</NuxtLink>
+      </nav>
     </header>
 
     <main class="lobby__main container">
@@ -64,13 +68,7 @@
         </button>
       </div>
 
-      <!-- Quick play local -->
-      <div class="lobby__local">
-        <p class="lobby__local-label">O juega localmente:</p>
-        <NuxtLink to="/game" class="btn btn--outline">
-          Modo Local (PvP teclado)
-        </NuxtLink>
-      </div>
+
     </main>
   </div>
 </template>
@@ -110,8 +108,38 @@ onMounted(() => {
   background: var(--color-bg);
 }
 
-.lobby__header { padding: 1.5rem 0; }
+.lobby__header {
+  padding: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .lobby__logo { font-size: 0.8rem; color: var(--color-primary); }
+
+.lobby__nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.lobby__nav-link {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  color: var(--color-text-dim);
+  text-decoration: none;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.lobby__nav-link:hover {
+  color: white;
+}
+
+.lobby__nav-link--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
 
 .lobby__main {
   padding: 2rem 1.5rem;
@@ -202,27 +230,4 @@ onMounted(() => {
 .lobby__watch-btn { align-self: center; font-size: 0.6rem; }
 
 .lobby__refresh { text-align: center; margin-bottom: 2rem; }
-
-.lobby__local {
-  text-align: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.lobby__local-label {
-  font-size: 0.8rem;
-  color: var(--color-text-dim);
-  margin-bottom: 0.75rem;
-}
-
-.btn--outline {
-  border-color: var(--color-border);
-  color: var(--color-text-dim);
-}
-
-.btn--outline:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: transparent;
-}
 </style>

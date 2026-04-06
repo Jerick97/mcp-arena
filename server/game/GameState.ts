@@ -276,6 +276,9 @@ function calculateElo(winnerElo: number, loserElo: number): { newWinner: number;
 }
 
 async function recordMatchResult(gameId: string, winnerId: string, turns: number) {
+  // Las partidas vs bot no cuentan para ranking
+  if (gameId.endsWith('_bot')) return
+
   // Get game with user IDs
   const { data: game } = await supabase.from('games').select('p1_user_id, p2_user_id, state_json').eq('id', gameId).single()
   if (!game) return

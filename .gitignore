@@ -15,6 +15,7 @@ logs
 
 # Claude Code
 .claude/
+.mcp.json
 
 # Unused sprite packs (originals - we only use soldier/, orc/, adventurer/)
 public/assets/sprites/warriors/Basic Asset Pack/

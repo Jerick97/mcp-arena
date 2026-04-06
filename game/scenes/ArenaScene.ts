@@ -3,6 +3,7 @@ import type { Fighter } from '~/game/entities/Fighter'
 import { createFighter, playFighterAnim, setFighterFacing, CHARACTER_DEFS } from '~/game/entities/Fighter'
 import { TurnSystem, type TurnAction } from '~/game/systems/TurnSystem'
 import { CombatSystem } from '~/game/systems/CombatSystem'
+import { BotSystem } from '~/game/systems/BotSystem'
 
 const TILE_SIZE = 32
 const ARENA_COLS = 20
@@ -20,6 +21,9 @@ export class ArenaScene extends Phaser.Scene {
   selectedAction: string = 'move'
   actionButtons: Phaser.GameObjects.Container[] = []
   turnIndicator!: Phaser.GameObjects.Text
+  botSystem: BotSystem | null = null
+  p1Mode: string = 'human'
+  p2Mode: string = 'human'
 
   constructor() {
     super({ key: 'Arena' })
@@ -69,6 +73,13 @@ export class ArenaScene extends Phaser.Scene {
     // Systems
     this.turnSystem = new TurnSystem([this.player1, this.player2])
     this.combatSystem = new CombatSystem(this, ARENA_COLS, ARENA_ROWS)
+
+    // Bot mode
+    this.p1Mode = this.registry.get('p1Mode') || 'human'
+    this.p2Mode = this.registry.get('p2Mode') || 'human'
+    if (this.p1Mode === 'bot' || this.p2Mode === 'bot') {
+      this.botSystem = new BotSystem('hard')
+    }
 
     // Input
     this.cursors = this.input.keyboard!.createCursorKeys()
@@ -203,6 +214,22 @@ export class ArenaScene extends Phaser.Scene {
 
     this.events.emit('turnStart', current)
     this.scene.get('HUD')?.events.emit('turnUpdate', this.turnSystem)
+
+    // Si el turno actual es de un bot, ejecutar su acción automáticamente
+    const currentMode = current.id === 'p1' ? this.p1Mode : this.p2Mode
+    if (currentMode === 'bot' && this.botSystem) {
+      this.executeBotTurn(current)
+    }
+  }
+
+  private async executeBotTurn(bot: Fighter) {
+    const opponent = bot.id === 'p1' ? this.player2 : this.player1
+
+    // Pequeña pausa para que el jugador vea que es turno del bot
+    await this.delay(600)
+
+    const action = this.botSystem!.decide(bot, opponent)
+    this.executeAction(bot, opponent, action)
   }
 
   gridToWorld(gridX: number, gridY: number): { x: number; y: number } {
@@ -212,11 +239,15 @@ export class ArenaScene extends Phaser.Scene {
     }
   }
 
-  update() {
+  override update() {
     const current = this.turnSystem.getCurrentFighter()
     const opponent = current.id === 'p1' ? this.player2 : this.player1
 
     if (this.turnSystem.isProcessing) return
+
+    // No procesar input de teclado si el turno actual es de un bot
+    const currentMode = current.id === 'p1' ? this.p1Mode : this.p2Mode
+    if (currentMode === 'bot') return
 
     if (Phaser.Input.Keyboard.JustDown(this.actionKeys.a)) this.selectAction('attack')
     if (Phaser.Input.Keyboard.JustDown(this.actionKeys.d)) this.selectAction('defend')

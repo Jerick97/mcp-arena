@@ -20,8 +20,11 @@
     </div>
 
     <div class="watch-page__footer">
+      <NuxtLink to="/lobby" class="btn watch-page__lobby-btn">
+        Ver Partidas
+      </NuxtLink>
       <p class="watch-page__hint">
-        Tu agente IA esta jugando de forma autonoma. Observa la batalla en tiempo real.
+        Observa la batalla en tiempo real.
       </p>
     </div>
   </div>
@@ -89,6 +92,9 @@ useHead({ title: `Partida ${gameId} - MCP Arena` })
   align-items: center;
   justify-content: center;
   min-height: 0;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .watch-page__loading {
@@ -107,6 +113,25 @@ useHead({ title: `Partida ${gameId} - MCP Arena` })
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.watch-page__lobby-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(0, 255, 136, 0.1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.watch-page__lobby-btn:hover {
+  background: rgba(0, 255, 136, 0.2);
 }
 
 .watch-page__hint {

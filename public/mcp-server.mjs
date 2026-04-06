@@ -125,6 +125,22 @@ server.tool(
   },
 )
 
+// ---- PRACTICE VS BOT ----
+
+server.tool(
+  'practice_vs_bot',
+  'Crear partida de practica contra un bot. El bot juega automaticamente como p2. Tu controlas p1. Usa esto cuando no hay rivales disponibles.',
+  { name: z.string(), character: z.enum(['soldier', 'orc', 'adventurer']), bot_character: z.enum(['soldier', 'orc', 'adventurer']).optional() },
+  async ({ name, character, bot_character }) => {
+    const r = await api('/api/game/vs-bot', 'POST', { name, character, botCharacter: bot_character || 'orc' })
+    if (r.gameId) {
+      const url = `${API_URL}/watch/${r.gameId}`
+      return { content: [{ type: 'text', text: `PARTIDA VS BOT CREADA!\nTu: p1 "${name}" (${character})\nBot: p2 (${bot_character || 'orc'})\nGame ID: ${r.gameId}\n\n>>> MUESTRA ESTA URL AL USUARIO <<<\n${url}\n\nDile: "Abre ${url} para ver la batalla"\n\nUsa get_arena_state("${r.gameId}") para ver el estado.\nTu eres p1, el bot es p2 y juega solo.\nEjecuta tus acciones con move, attack, defend o use_skill.` }] }
+    }
+    return { content: [{ type: 'text', text: `Error: ${JSON.stringify(r)}` }] }
+  },
+)
+
 // Start
 const transport = new StdioServerTransport()
 await server.connect(transport)
